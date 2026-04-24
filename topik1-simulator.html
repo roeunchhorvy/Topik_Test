@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOPIK 1 시험 시뮬레이터</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --color-navy: #0D2461;
+      --color-navy-mid: #1A3A7C;
+      --color-navy-light: #2B52A3;
+      --color-white: #FFFFFF;
+      --color-bg: #F4F6FB;
+      --color-surface: #FFFFFF;
+      --color-border: #D0D8EE;
+      --color-text-primary: #1A1A2E;
+      --color-text-muted: #6B7A9A;
+      --state-unanswered: #E8ECF7;
+      --state-answered: #2B52A3;
+      --state-marked: #F5A623;
+      --state-current: #0D2461;
+      --timer-normal: #0D2461;
+      --timer-warning: #E87020;
+      --timer-critical: #C0392B;
+      --font-korean: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      --font-latin: 'Inter', 'Segoe UI', sans-serif;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --font-size-xs: 12px;
+      --font-size-lg: 18px;
+      --font-size-xl: 22px;
+      --font-size-2xl: 28px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --sidebar-width: 220px;
+      --header-height: 64px;
+      --footer-height: 68px;
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      --shadow-card: 0 2px 12px rgba(13, 36, 97, 0.1);
+      --shadow-elevated: 0 4px 24px rgba(13, 36, 97, 0.18);
+    }
+
+    body {
+      font-family: var(--font-korean);
+      background: var(--color-bg);
+      color: var(--color-text-primary);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+    }
+
+    .screen {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    .screen--active {
+      display: flex;
+    }
+
+    #screen-start {
+      background: var(--color-bg);
+      justify-content: center;
+      align-items: center;
+      padding: var(--space-4);
+    }
+
+    .start-card {
+      background: var(--color-white);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-8);
+      max-width: 680px;
+      width: 100%;
+      box-shadow: var(--shadow-card);
+    }
+
+    .start-logo {
+      text-align: center;
+      margin-bottom: var(--space-8);
+      font-size: 48px;
+    }
+
+    .start-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      text-align: center;
+      color: var(--color-navy);
+      margin-bottom: var(--space-4);
+    }
+
+    .start-subtitle {
+      text-align: center;
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-6);
+      font-size: var(--font-size-sm);
+    }
+
+    .start-meta {
+      background: var(--color-bg);
+      border-radius: var(--border-radius-md);
+      padding: var(--space-4);
+      margin-bottom: var(--space-6);
+      font-size: var(--font-size-sm);
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .meta-row:last-child {
+      border-bottom: none;
+    }
+
+    .meta-label {
+      font-weight: 600;
+      color: var(--color-navy);
+    }
+
+    .meta-value {
+      color: var(--color-text-primary);
+    }
+
+    .start-options {
+      margin-bottom: var(--space-6);
+      padding: var(--space-4);
+      background: var(--color-bg);
+      border-radius: var(--border-radius-md);
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .checkbox-item label {
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+    }
+
+    .btn {
+      padding: var(--space-3) var(--space-6);
+      border: none;
+      border-radius: var(--border-radius-md);
+      font-size: var(--font-size-base);
+      font-family: var(--font-korean);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+    }
+
+    .btn--primary {
+      background: var(--color-navy);
+      color: var(--color-white);
+      width: 100%;
+      padding: var(--space-4) var(--space-6);
+      font-size: var(--font-size-lg);
+    }
+
+    .btn--primary:hover {
+      background: var(--color-navy-mid);
+    }
+
+    .btn--secondary {
+      background: transparent;
+      color: var(--color-navy);
+      border: 2px solid var(--color-navy);
+    }
+
+    .btn--secondary:hover {
+      background: var(--color-bg);
+    }
+
+    .btn--ghost {
+      background: transparent;
+      color: var(--color-navy);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--font-size-sm);
+    }
+
+    .btn--ghost:hover {
+      background: var(--color-bg);
+    }
+
+    .btn--icon {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 50%;
+      background: var(--color-bg);
+    }
+
+    #screen-exam {
+      flex-direction: column;
+      background: var(--color-bg);
+    }
+
+    .exam-header {
+      background: var(--color-navy);
+      color: var(--color-white);
+      padding: 0 var(--space-6);
+      height: var(--header-height);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(13, 36, 97, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .exam-header__left {
+      flex: 1;
+    }
+
+    .exam-header__center {
+      flex: 1;
+      text-align: center;
+    }
+
+    .exam-header__right {
+      flex: 1;
+      text-align: right;
+      font-size: var(--font-size-sm);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .section-label {
+      font-size: var(--font-size-xs);
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .question-counter {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+    }
+
+    .timer-block {
+      text-align: center;
+    }
+
+    .timer-label {
+      font-size: var(--font-size-xs);
+      opacity: 0.8;
+      margin-bottom: 2px;
+    }
+
+    .timer-display {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      color: var(--color-white);
+    }
+
+    .timer-display--warning {
+      color: var(--timer-warning);
+    }
+
+    .timer-display--critical {
+      color: var(--timer-critical);
+      animation: pulse 0.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .timer-progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.3);
+      transition: width 0.1s linear;
+    }
+
+    .exam-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .question-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-8);
+      background: var(--color-white);
+    }
+
+    .question-wrapper {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .question-number {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-3);
+    }
+
+    .question-prompt {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--color-navy);
+      margin-bottom: var(--space-3);
+      line-height: 1.5;
+    }
+
+    .question-romanization {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      font-style: italic;
+      margin-bottom: var(--space-6);
+    }
+
+    .question-audio-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-navy-light);
+      color: var(--color-white);
+      border: none;
+      border-radius: var(--border-radius-md);
+      cursor: pointer;
+      font-family: var(--font-korean);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--space-6);
+    }
+
+    .question-audio-btn:hover {
+      background: var(--color-navy);
+    }
+
+    .question-script {
+      background: var(--color-bg);
+      padding: var(--space-4);
+      border-left: 3px solid var(--color-navy);
+      margin-bottom: var(--space-6);
+      border-radius: var(--border-radius-md);
+      font-size: var(--font-size-sm);
+    }
+
+    .script-line {
+      margin-bottom: var(--space-3);
+      line-height: 1.5;
+    }
+
+    .script-speaker {
+      font-weight: 600;
+      color: var(--color-navy);
+    }
+
+    .script-text {
+      margin-left: var(--space-4);
+      color: var(--color-text-primary);
+    }
+
+    .passage-text {
+      background: var(--color-bg);
+      padding: var(--space-4);
+      border-radius: var(--border-radius-md);
+      margin-bottom: var(--space-6);
+      line-height: 1.7;
+      font-size: var(--font-size-base);
+    }
+
+    .answer-options {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+
+    .answer-option {
+      padding: var(--space-4);
+      border: 2px solid var(--color-border);
+      border-radius: var(--border-radius-md);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      gap: var(--space-4);
+      align-items: flex-start;
+      background: var(--color-white);
+    }
+
+    .answer-option:hover {
+      border-color: var(--color-navy-light);
+      background: rgba(43, 82, 163, 0.05);
+    }
+
+    .answer-option--selected {
+      border-color: var(--color-navy);
+      background: rgba(43, 82, 163, 0.1);
+    }
+
+    .answer-option__number {
+      min-width: 32px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--color-navy);
+      color: var(--color-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--font-size-sm);
+    }
+
+    .answer-option--selected .answer-option__number {
+      background: var(--color-navy-light);
+    }
+
+    .answer-option__content {
+      flex: 1;
+    }
+
+    .answer-option__text {
+      font-weight: 500;
+      color: var(--color-text-primary);
+      margin-bottom: 4px;
+    }
+
+    .answer-option__rom {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--color-white);
+      border-left: 1px solid var(--color-border);
+      overflow-y: auto;
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar__section-label {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-navy);
+      margin-top: var(--space-4);
+      margin-bottom: var(--space-3);
+      text-transform: uppercase;
+      font-size: var(--font-size-xs);
+    }
+
+    .sidebar__grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: var(--space-6);
+    }
+
+    .grid-cell {
+      width: 35px;
+      height: 35px;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      background: var(--state-unanswered);
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .grid-cell:hover {
+      border-color: var(--color-navy);
+    }
+
+    .grid-cell--answered {
+      background: var(--state-answered);
+      color: var(--color-white);
+      border-color: var(--state-answered);
+    }
+
+    .grid-cell--marked {
+      background: var(--state-marked);
+      color: var(--color-white);
+      border-color: var(--state-marked);
+    }
+
+    .grid-cell--current {
+      border: 2px solid var(--color-navy);
+      font-weight: 700;
+    }
+
+    .sidebar__divider {
+      border: none;
+      border-top: 1px solid var(--color-border);
+      margin: var(--space-6) 0;
+    }
+
+    .sidebar__legend {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    .legend-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 2px;
+    }
+
+    .exam-footer {
+      background: var(--color-white);
+      border-top: 1px solid var(--color-border);
+      padding: var(--space-4) var(--space-6);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: var(--footer-height);
+      gap: var(--space-4);
+    }
+
+    .footer-nav {
+      display: flex;
+      gap: var(--space-3);
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: var(--space-3);
+      margin-left: auto;
+    }
+
+    .mark-btn--active {
+      color: var(--state-marked);
+    }
+
+    #screen-results {
+      background: var(--color-bg);
+      justify-content: center;
+      align-items: center;
+      overflow-y: auto;
+      padding: var(--space-8);
+    }
+
+    .results-card {
+      background: var(--color-white);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-8);
+      max-width: 760px;
+      width: 100%;
+      box-shadow: var(--shadow-card);
+    }
+
+    .results-header {
+      text-align: center;
+      margin-bottom: var(--space-8);
+      padding-bottom: var(--space-6);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .results-congrats {
+      font-size: var(--font-size-xl);
+      color: var(--color-navy);
+      margin-bottom: var(--space-4);
+    }
+
+    .level-badge {
+      display: inline-block;
+      padding: var(--space-3) var(--space-6);
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: var(--font-size-lg);
+      margin-bottom: var(--space-6);
+    }
+
+    .level-badge--level2 {
+      background: #FFD700;
+      color: #333;
+    }
+
+    .level-badge--level1 {
+      background: #C0C0C0;
+      color: #333;
+    }
+
+    .level-badge--fail {
+      background: var(--color-border);
+      color: var(--color-text-muted);
+    }
+
+    .score-total {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--color-navy);
+      margin-bottom: var(--space-4);
+    }
+
+    .score-subtext {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-6);
+    }
+
+    .score-sections {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6);
+      margin-top: var(--space-6);
+    }
+
+    .score-section {
+      background: var(--color-bg);
+      padding: var(--space-4);
+      border-radius: var(--border-radius-md);
+      text-align: center;
+    }
+
+    .score-section__label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-2);
+    }
+
+    .score-section__value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--color-navy);
+    }
+
+    .review-section {
+      margin-top: var(--space-8);
+      padding-top: var(--space-6);
+      border-top: 2px solid var(--color-border);
+    }
+
+    .review-toggle-btn {
+      width: 100%;
+      padding: var(--space-4);
+      background: var(--color-bg);
+      border: none;
+      border-radius: var(--border-radius-md);
+      cursor: pointer;
+      font-family: var(--font-korean);
+      font-weight: 600;
+      color: var(--color-navy);
+      font-size: var(--font-size-base);
+      transition: all 0.2s ease;
+      margin-bottom: var(--space-4);
+    }
+
+    .review-toggle-btn:hover {
+      background: var(--color-navy-light);
+      color: var(--color-white);
+    }
+
+    .review-list {
+      display: none;
+      list-style: none;
+    }
+
+    .review-list--open {
+      display: block;
+    }
+
+    .review-item {
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+      background: var(--color-bg);
+      border-left: 4px solid var(--color-border);
+      border-radius: var(--border-radius-md);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .review-item:hover {
+      background: rgba(43, 82, 163, 0.05);
+    }
+
+    .review-item--correct {
+      border-left-color: #16a34a;
+    }
+
+    .review-item--incorrect {
+      border-left-color: var(--timer-critical);
+    }
+
+    .review-item--skipped {
+      border-left-color: var(--color-text-muted);
+    }
+
+    .review-item__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2);
+    }
+
+    .review-item__number {
+      font-weight: 600;
+      color: var(--color-navy);
+      font-size: var(--font-size-sm);
+    }
+
+    .review-item__result {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+    }
+
+    .review-item--correct .review-item__result {
+      color: #16a34a;
+    }
+
+    .review-item--incorrect .review-item__result {
+      color: var(--timer-critical);
+    }
+
+    .review-item--skipped .review-item__result {
+      color: var(--color-text-muted);
+    }
+
+    .review-item__question {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-3);
+      line-height: 1.5;
+    }
+
+    .review-answer-row {
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--space-2);
+    }
+
+    .review-answer-label {
+      color: var(--color-text-muted);
+      font-weight: 600;
+    }
+
+    .review-answer-text {
+      color: var(--color-text-primary);
+    }
+
+    .review-item__explanation {
+      display: none;
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      line-height: 1.6;
+    }
+
+    .review-item--open .review-item__explanation {
+      display: block;
+    }
+
+    .results-actions {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-8);
+      justify-content: center;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: var(--color-white);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-8);
+      max-width: 420px;
+      width: 90%;
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .modal__title {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      color: var(--color-navy);
+      margin-bottom: var(--space-4);
+    }
+
+    .modal__message {
+      font-size: var(--font-size-base);
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-6);
+      line-height: 1.6;
+    }
+
+    .modal__buttons {
+      display: flex;
+      gap: var(--space-4);
+    }
+
+    .modal__btn {
+      flex: 1;
+      padding: var(--space-4);
+      border: none;
+      border-radius: var(--border-radius-md);
+      font-family: var(--font-korean);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal__btn--primary {
+      background: var(--color-navy);
+      color: var(--color-white);
+    }
+
+    .modal__btn--primary:hover {
+      background: var(--color-navy-mid);
+    }
+
+    .modal__btn--secondary {
+      background: var(--color-bg);
+      color: var(--color-navy);
+      border: 2px solid var(--color-border);
+    }
+
+    .modal__btn--secondary:hover {
+      border-color: var(--color-navy);
+    }
+
+    @media (max-width: 640px) {
+      .sidebar {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+        max-height: 50vh;
+        border-left: none;
+        border-top: 1px solid var(--color-border);
+        z-index: 40;
+      }
+
+      .sidebar--open {
+        display: flex;
+      }
+
+      .exam-body {
+        flex-direction: column;
+      }
+
+      .question-panel {
+        padding: var(--space-4);
+      }
+
+      .exam-footer {
+        padding-bottom: 220px;
+      }
+
+      .results-card {
+        padding: var(--space-4);
+      }
+
+      .score-sections {
+        grid-template-columns: 1fr;
+      }
+
+      .results-actions {
+        flex-direction: column;
+      }
+
+      .timer-display {
+        font-size: var(--font-size-xl);
+      }
+
+      .score-total {
+        font-size: 36px;
+      }
+    }
+
+    @media print {
+      body { background: var(--color-white); }
+      #screen-start, #screen-exam { display: none !important; }
+      #screen-results { display: flex !important; position: static; }
+      .results-actions, .review-toggle-btn { display: none; }
+      .review-list { display: block !important; }
+      .review-item__explanation { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="screen-start" class="screen screen--active">
+    <div class="start-card">
+      <div class="start-logo">🇰🇷</div>
+      <h1 class="start-title">TOPIK 1 시험 시뮬레이터</h1>
+      <p class="start-subtitle">한국어능력시험 1급 모의고사</p>
+
+      <div class="start-meta">
+        <div class="meta-row">
+          <span class="meta-label">섹션</span>
+          <span class="meta-value">듣기 (30문) + 읽기 (40문)</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">시간</span>
+          <span class="meta-value">듣기: 40분 / 읽기: 60분</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">총 문제</span>
+          <span class="meta-value">70문제 (200점 만점)</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">합격선</span>
+          <span class="meta-value">1급 80점 이상</span>
+        </div>
+      </div>
+
+      <div class="start-options">
+        <div class="checkbox-item">
+          <input type="checkbox" id="randomize-opt" />
+          <label for="randomize-opt">문제 순서를 무작위로 섞기</label>
+        </div>
+      </div>
+
+      <button class="btn btn--primary" id="start-btn">시험 시작</button>
+    </div>
+  </div>
+
+  <div id="screen-exam" class="screen">
+    <div class="exam-header">
+      <div class="exam-header__left">
+        <div class="section-label" id="section-label">듣기</div>
+        <div class="question-counter"><span id="q-number">1</span> / <span id="q-total">30</span></div>
+      </div>
+      <div class="exam-header__center">
+        <div class="timer-block">
+          <div class="timer-label">남은 시간</div>
+          <div class="timer-display" id="timer-display">40:00</div>
+        </div>
+        <div class="timer-progress-bar" id="timer-progress"></div>
+      </div>
+      <div class="exam-header__right">
+        <div id="progress-pct">0% 진행</div>
+      </div>
+    </div>
+
+    <div class="exam-body">
+      <div class="question-panel">
+        <div class="question-wrapper" id="question-wrapper"></div>
+      </div>
+
+      <div class="sidebar" id="sidebar">
+        <div id="sidebar-content"></div>
+      </div>
+    </div>
+
+    <div class="exam-footer">
+      <div class="footer-nav">
+        <button class="btn btn--secondary" id="prev-btn">← 이전</button>
+        <button class="btn btn--secondary" id="next-btn">다음 →</button>
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn--ghost btn--icon" id="mark-btn" title="검토 표시">⭐</button>
+        <button class="btn btn--secondary" id="submit-section-btn">제출</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-results" class="screen">
+    <div class="results-card">
+      <div class="results-header">
+        <div class="results-congrats">축하합니다!</div>
+        <div class="level-badge" id="level-badge"></div>
+        <div class="score-total" id="total-score">0</div>
+        <div class="score-subtext">200점 만점</div>
+        <div class="score-sections">
+          <div class="score-section">
+            <div class="score-section__label">듣기</div>
+            <div class="score-section__value" id="listening-score">0</div>
+          </div>
+          <div class="score-section">
+            <div class="score-section__label">읽기</div>
+            <div class="score-section__value" id="reading-score">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="review-section">
+        <button class="review-toggle-btn" id="review-toggle">📋 답안 확인</button>
+        <ul class="review-list" id="review-list"></ul>
+      </div>
+
+      <div class="results-actions">
+        <button class="btn btn--primary" id="retake-btn">다시 시작</button>
+        <button class="btn btn--secondary" onclick="window.print()">프린트</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCORE_PER_Q = {
+      listening: 100 / 30,
+      reading: 100 / 40,
+    };
+
+    let AppState = {
+      phase: 'start',
+      currentSection: 'listening',
+      currentQuestionIndex: 0,
+      answers: {},
+      markedQuestions: new Set(),
+      timer: {
+        listening: { totalSeconds: 40 * 60, remainingSeconds: 40 * 60 },
+        reading: { totalSeconds: 60 * 60, remainingSeconds: 60 * 60 },
+        intervalId: null,
+      },
+      options: { randomizeOrder: false },
+      questionOrder: { listening: [], reading: [] },
+      results: null,
+    };
+
+    const questionData = {
+      listening: [
+        // Q1-4: Picture Vocab
+        { id: 1, section: 'listening', type: 'picture-vocab', audioIndicator: true, pictureEmoji: '🍎', instruction: { korean: '그림을 보고 알맞은 것을 고르십시오.', romanization: 'Geureumul bogo almajeun geoseul goreusipsio.' }, options: [{ korean: '사과', romanization: 'sagwa' }, { korean: '바나나', romanization: 'banana' }, { korean: '딸기', romanization: 'ttalgi' }, { korean: '귤', romanization: 'gyul' }], correctAnswer: 1, explanation: { english: 'The picture shows an apple. 사과 (sagwa) means apple.' } },
+        { id: 2, section: 'listening', type: 'picture-vocab', audioIndicator: true, pictureEmoji: '🚌', instruction: { korean: '그림을 보고 알맞은 것을 고르십시오.', romanization: 'Geureumul bogo almajeun geoseul goreusipsio.' }, options: [{ korean: '택시', romanization: 'taeksi' }, { korean: '버스', romanization: 'beoseu' }, { korean: '기차', romanization: 'gicha' }, { korean: '자동차', romanization: 'jadongcha' }], correctAnswer: 2, explanation: { english: 'The picture shows a bus. 버스 (beoseu) means bus.' } },
+        { id: 3, section: 'listening', type: 'picture-vocab', audioIndicator: true, pictureEmoji: '🐱', instruction: { korean: '그림을 보고 알맞은 것을 고르십시오.', romanization: 'Geureumul bogo almajeun geoseul goreusipsio.' }, options: [{ korean: '개', romanization: 'gae' }, { korean: '고양이', romanization: 'goyangi' }, { korean: '토끼', romanization: 'tokki' }, { korean: '쥐', romanization: 'jwi' }], correctAnswer: 2, explanation: { english: 'The picture shows a cat. 고양이 (goyangi) means cat.' } },
+        { id: 4, section: 'listening', type: 'picture-vocab', audioIndicator: true, pictureEmoji: '🍚', instruction: { korean: '그림을 보고 알맞은 것을 고르십시오.', romanization: 'Geureumul bogo almajeun geoseul goreusipsio.' }, options: [{ korean: '빵', romanization: 'bbang' }, { korean: '밥', romanization: 'bap' }, { korean: '면', romanization: 'myeon' }, { korean: '찌개', romanization: 'jjigae' }], correctAnswer: 2, explanation: { english: 'The picture shows rice. 밥 (bap) means rice/meal.' } },
+        // Q5-12: Meaning
+        { id: 5, section: 'listening', type: 'meaning', audioIndicator: true, prompt: { korean: '안녕하세요', romanization: 'Annyeonghaseyo' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '감사합니다', romanization: 'gamsahamnida' }, { korean: '괜찮습니다', romanization: 'gwaenchanseumnida' }, { korean: '인사', romanization: 'insa' }, { korean: '안녕', romanization: 'annyeong' }], correctAnswer: 3, explanation: { english: '안녕하세요 (annyeonghaseyo) is a formal greeting. 인사 (insa) means greeting/salutation.' } },
+        { id: 6, section: 'listening', type: 'meaning', audioIndicator: true, prompt: { korean: '삼십오', romanization: 'samsibi' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '25', romanization: '25' }, { korean: '35', romanization: '35' }, { korean: '45', romanization: '45' }, { korean: '55', romanization: '55' }], correctAnswer: 2, explanation: { english: '삼십오 (samsibi) means thirty-five (3x10 + 5).' } },
+        { id: 7, section: 'listening', type: 'meaning', audioIndicator: true, prompt: { korean: '오전', romanization: 'ojeon' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '아침', romanization: 'achim' }, { korean: '정오', romanization: 'jeongo' }, { korean: '오후', romanization: 'ohu' }, { korean: '저녁', romanization: 'jeonyeok' }], correctAnswer: 1, explanation: { english: '오전 (ojeon) means AM or morning time before noon.' } },
+        { id: 8, section: 'listening', type: 'meaning', audioIndicator: true, prompt: { korean: '어머니', romanization: 'eomeoni' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '할머니', romanization: 'halmeoni' }, { korean: '어머니', romanization: 'eomeoni' }, { korean: '누나', romanization: 'nuna' }, { korean: '여동생', romanization: 'yeodongsan' }], correctAnswer: 2, explanation: { english: '어머니 (eomeoni) means mother.' } },
+        { id: 9, section: 'listening', type: 'meaning', audioIndicator: true, prompt: { korean: '파란색', romanization: 'paransaek' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '빨간색', romanization: 'ppalgansaek' }, { korean: '노란색', romanization: 'noransaek' }, { korean: '파란색', romanization: 'paransaek' }, { korean: '검은색', romanization: 'geomeunsaek' }], correctAnswer: 3, explanation: { english: '파란색 (paransaek) means the color blue.' } },
+        { id: 10, section: 'listening', type: 'meaning', audioIndicator: true, prompt: { korean: '월요일', romanization: 'wolyoil' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '토요일', romanization: 'toyoil' }, { korean: '목요일', romanization: 'mogyoil' }, { korean: '월요일', romanization: 'wolyoil' }, { korean: '일요일', romanization: 'iryoil' }], correctAnswer: 3, explanation: { english: '월요일 (wolyoil) is Monday, the second day of the week.' } },
+        { id: 11, section: 'listening', type: 'meaning', audioIndicator: true, prompt: { korean: '선생님', romanization: 'seonsaengnim' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '학생', romanization: 'haksaeng' }, { korean: '친구', romanization: 'chingu' }, { korean: '선생님', romanization: 'seonsaengnim' }, { korean: '부모', romanization: 'bumo' }], correctAnswer: 3, explanation: { english: '선생님 (seonsaengnim) means teacher.' } },
+        { id: 12, section: 'listening', type: 'meaning', audioIndicator: true, prompt: { korean: '왼쪽', romanization: 'oenssok' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '오른쪽', romanization: 'oreunjjok' }, { korean: '앞', romanization: 'ap' }, { korean: '왼쪽', romanization: 'oenssok' }, { korean: '뒤', romanization: 'dwi' }], correctAnswer: 3, explanation: { english: '왼쪽 (oenssok) means the left side.' } },
+        // Q13-20: Fill Blank
+        { id: 13, section: 'listening', type: 'fill-blank', audioIndicator: true, sentence: { korean: '저는 학생( )입니다.', romanization: 'Jeoneun haksaeng( )imnida.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '를', romanization: 'reul' }, { korean: '이', romanization: 'i' }, { korean: '이', romanization: 'i' }, { korean: '을', romanization: 'eul' }], correctAnswer: 3, explanation: { english: 'This sentence means "I am a student." The copula 이(i) is needed after 학생 (student).' } },
+        { id: 14, section: 'listening', type: 'fill-blank', audioIndicator: true, sentence: { korean: '책상 위( )책이 있습니다.', romanization: 'Chaeksang wi( )chagi isseumnida.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '에', romanization: 'e' }, { korean: '을', romanization: 'eul' }, { korean: '를', romanization: 'reul' }, { korean: '이', romanization: 'i' }], correctAnswer: 1, explanation: { english: 'The particle 에 (e) indicates a location. "There is a book on the desk."' } },
+        { id: 15, section: 'listening', type: 'fill-blank', audioIndicator: true, sentence: { korean: '지금 몇 시( )요?', romanization: 'Jigeum myeot si( )yo?' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '는', romanization: 'neun' }, { korean: '를', romanization: 'reul' }, { korean: '예요', romanization: 'yeyo' }, { korean: '입니까', romanization: 'imnikka' }], correctAnswer: 3, explanation: { english: 'Adding 예요 (yeyo) makes it an informal question: "What time is it now?"' } },
+        { id: 16, section: 'listening', type: 'fill-blank', audioIndicator: true, sentence: { korean: '비빔밥 하나( )주세요.', romanization: 'Bibimbap hana( )juseyo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '에', romanization: 'e' }, { korean: '로', romanization: 'ro' }, { korean: '를', romanization: 'reul' }, { korean: '있', romanization: 'it' }], correctAnswer: 2, explanation: { english: 'The request "Please give me one bibimbap." uses 로 (ro) as a particle marking the recipient/direction.' } },
+        { id: 17, section: 'listening', type: 'fill-blank', audioIndicator: true, sentence: { korean: '이 가방은 얼마( )요?', romanization: 'I gabang-eun eolma( )yo?' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '예요', romanization: 'yeyo' }, { korean: '입니까', romanization: 'imnikka' }, { korean: '입니다', romanization: 'imnida' }, { korean: '었어요', romanization: 'eosseoyeo' }], correctAnswer: 1, explanation: { english: 'Adding 예요 (yeyo) makes it a casual question: "How much is this bag?"' } },
+        { id: 18, section: 'listening', type: 'fill-blank', audioIndicator: true, sentence: { korean: '오늘 날씨가 ( ) 좋습니다.', romanization: 'Oneul nalssi-ga ( ) johseumnida.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '매우', romanization: 'maeu' }, { korean: '아주', romanization: 'aju' }, { korean: '정말', romanization: 'jeongmal' }, { korean: '더', romanization: 'deo' }], correctAnswer: 1, explanation: { english: 'Adverbs like 매우 (very) modify adjectives. "Today\'s weather is very nice."' } },
+        { id: 19, section: 'listening', type: 'fill-blank', audioIndicator: true, sentence: { korean: '지하철( )학교에 갑니다.', romanization: 'Jihacheol( )hakgyoe gamnida.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '으로', romanization: 'euro' }, { korean: '에', romanization: 'e' }, { korean: '를', romanization: 'reul' }, { korean: '이', romanization: 'i' }], correctAnswer: 1, explanation: { english: 'The particle 으로 (euro) marks the means of transportation: "I go to school by subway."' } },
+        { id: 20, section: 'listening', type: 'fill-blank', audioIndicator: true, sentence: { korean: '아침에 ( )을 닦습니다.', romanization: 'Achime ( )eul dakkseumnida.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '손', romanization: 'son' }, { korean: '이빨', romanization: 'ibpal' }, { korean: '얼굴', romanization: 'eolgul' }, { korean: '머리', romanization: 'meori' }], correctAnswer: 2, explanation: { english: '이빨을 닦다 (to brush teeth) is a common morning routine phrase.' } },
+        // Q21-28: Dialogue Comprehension
+        { id: 21, section: 'listening', type: 'dialogue', audioIndicator: true, speakers: [{ label: '가', korean: '이름이 뭐예요?', romanization: 'Ireum-i mwoyeyo?' }, { label: '나', korean: '김민준이에요.', romanization: 'Gim Minjun-ieyo.' }], question: { korean: '나는 누구입니까?', romanization: 'Na-neun nuguimnikka?' }, options: [{ korean: '학생', romanization: 'haksaeng' }, { korean: '김민준', romanization: 'Gim Minjun' }, { korean: '선생님', romanization: 'seonsaengnim' }, { korean: '친구', romanization: 'chingu' }], correctAnswer: 2, explanation: { english: 'Person B says their name is 김민준 (Kim Minjun).' } },
+        { id: 22, section: 'listening', type: 'dialogue', audioIndicator: true, speakers: [{ label: '가', korean: '화장실이 어디에 있어요?', romanization: 'Hwajangshir-i eodi-e itseoyo?' }, { label: '나', korean: '2층에 있어요.', romanization: '2cheung-e itseoyo.' }], question: { korean: '화장실은 어디에 있습니까?', romanization: 'Hwajangshir-eun eodi-e isseumnikka?' }, options: [{ korean: '1층', romanization: '1cheung' }, { korean: '2층', romanization: '2cheung' }, { korean: '3층', romanization: '3cheung' }, { korean: '지하', romanization: 'jiha' }], correctAnswer: 2, explanation: { english: 'The bathroom is on the second floor (2층).' } },
+        { id: 23, section: 'listening', type: 'dialogue', audioIndicator: true, speakers: [{ label: '가', korean: '뭘 드시겠어요?', romanization: 'Mweol deushigetseoyo?' }, { label: '나', korean: '냉면 주세요.', romanization: 'Naengmyeon juseyo.' }], question: { korean: '나는 뭘 시켰어요?', romanization: 'Na-neun mweol sikyeoseoyo?' }, options: [{ korean: '카레', romanization: 'kare' }, { korean: '냉면', romanization: 'naengmyeon' }, { korean: '김밥', romanization: 'gimbap' }, { korean: '우동', romanization: 'udong' }], correctAnswer: 2, explanation: { english: 'Person B ordered naengmyeon (cold noodles).' } },
+        { id: 24, section: 'listening', type: 'dialogue', audioIndicator: true, speakers: [{ label: '가', korean: '이 옷 얼마예요?', romanization: 'I ot eolmayeyo?' }, { label: '나', korean: '만 오천 원이에요.', romanization: 'Man ocheon woneyo.' }], question: { korean: '옷의 가격은 얼마입니까?', romanization: 'Ot-ui gagyeok-eun eolmaimnikka?' }, options: [{ korean: '5,000원', romanization: '5000won' }, { korean: '10,000원', romanization: '10000won' }, { korean: '15,000원', romanization: '15000won' }, { korean: '50,000원', romanization: '50000won' }], correctAnswer: 3, explanation: { english: 'The price is 만 오천 원 = 15,000 won (10,000 + 5,000).' } },
+        { id: 25, section: 'listening', type: 'dialogue', audioIndicator: true, speakers: [{ label: '가', korean: '내일 시간 있어요?', romanization: 'Naeil sigan itseoyo?' }, { label: '나', korean: '오후에 있어요.', romanization: 'Ohu-e itseoyo.' }], question: { korean: '나는 언제 시간이 있습니까?', romanization: 'Na-neun eonje sigan-i isseumnikka?' }, options: [{ korean: '오전', romanization: 'ojeon' }, { korean: '오후', romanization: 'ohu' }, { korean: '아침', romanization: 'achim' }, { korean: '저녁', romanization: 'jeonyeok' }], correctAnswer: 2, explanation: { english: 'Person B has time in the afternoon (오후).' } },
+        { id: 26, section: 'listening', type: 'dialogue', audioIndicator: true, speakers: [{ label: '가', korean: '어디 아파요?', romanization: 'Eodi apayo?' }, { label: '나', korean: '머리가 아파요.', romanization: 'Meori-ga apayo.' }], question: { korean: '나는 어디가 아팠어요?', romanization: 'Na-neun eodi-ga apatseoyo?' }, options: [{ korean: '배', romanization: 'bae' }, { korean: '머리', romanization: 'meori' }, { korean: '팔', romanization: 'pal' }, { korean: '발', romanization: 'bal' }], correctAnswer: 2, explanation: { english: 'Person B has a headache (머리가 아파요 = head hurts).' } },
+        { id: 27, section: 'listening', type: 'dialogue', audioIndicator: true, speakers: [{ label: '가', korean: '취미가 뭐예요?', romanization: 'Chwimi-ga mwoyeyo?' }, { label: '나', korean: '음악 듣는 것을 좋아해요.', romanization: 'Eumak deutneun geoseul joahaeyo.' }], question: { korean: '나의 취미는 뭡니까?', romanization: 'Na-ui chwimi-neun mweomnikka?' }, options: [{ korean: '독서', romanization: 'dokse' }, { korean: '음악 감상', romanization: 'eumak gamsan' }, { korean: '영화 감상', romanization: 'yeonghwa gamsan' }, { korean: '요리', romanization: 'yori' }], correctAnswer: 2, explanation: { english: 'Person B likes listening to music (음악 듣는 것을 좋아해요).' } },
+        { id: 28, section: 'listening', type: 'dialogue', audioIndicator: true, speakers: [{ label: '가', korean: '몇 시에 일어나요?', romanization: 'Myeot si-e ireonayo?' }, { label: '나', korean: '일곱 시에 일어나요.', romanization: 'Ilgop si-e ireonayo.' }], question: { korean: '나는 몇 시에 일어나요?', romanization: 'Na-neun myeot si-e ireonayo?' }, options: [{ korean: '5시', romanization: '5si' }, { korean: '6시', romanization: '6si' }, { korean: '7시', romanization: '7si' }, { korean: '8시', romanization: '8si' }], correctAnswer: 3, explanation: { english: 'Person B wakes up at 7 o\'clock (일곱 시 = 7 o\'clock).' } },
+        // Q29-30: Reading Comprehension
+        { id: 29, section: 'listening', type: 'reading-comprehension', passage: { korean: '저는 월요일부터 금요일까지 학교에 갑니다. 토요일과 일요일은 학교에 가지 않습니다.', romanization: 'Jeoneun wolyoil-buteo geumyoil-kkaji hakgyoe gamnida. Toyoil-gwa iryoil-eun hakgyoe gaji anseumnida.' }, question: { korean: '저는 일주일에 며칠 학교에 갑니까?', romanization: 'Jeoneun ilyuil-e myeochil hakgyoe gapnikka?' }, options: [{ korean: '3일', romanization: '3il' }, { korean: '4일', romanization: '4il' }, { korean: '5일', romanization: '5il' }, { korean: '7일', romanization: '7il' }], correctAnswer: 3, explanation: { english: 'The person goes to school Monday through Friday, which is 5 days (5일).' } },
+        { id: 30, section: 'listening', type: 'reading-comprehension', passage: { korean: '내일은 비가 올 것입니다. 밖에 나갈 때 우산을 가져오세요. 날씨가 추워질 거예요.', romanization: 'Naeil-eun bi-ga ol geosiminda. Bakk-e nagal ttae usan-eul gajyeoseyo. Nalssi-ga chuwojil geoyeyo.' }, question: { korean: '내일 날씨는 어떨 것 같습니까?', romanization: 'Naeil nalssi-neun eotteol geot gatseumnikka?' }, options: [{ korean: '맑음', romanization: 'malkeeum' }, { korean: '흐림과 추움', romanization: 'heurerim-gwa chueum' }, { korean: '덥음', romanization: 'deopeum' }, { korean: '바람', romanization: 'baram' }], correctAnswer: 2, explanation: { english: 'Tomorrow will be rainy and cold, so bring an umbrella.' } },
+      ],
+      reading: [
+        // Q1-10: Vocabulary Meaning
+        { id: 31, section: 'reading', type: 'meaning', prompt: { korean: '먹다', romanization: 'meokda' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '마시다', romanization: 'masida' }, { korean: '요리하다', romanization: 'yorihada' }, { korean: '음식을 입으로 넘기다', romanization: 'eumsig-eul ip-euro neomgida' }, { korean: '주다', romanization: 'juda' }], correctAnswer: 3, explanation: { english: '먹다 (meokda) means to eat - to take food into the mouth and swallow.' } },
+        { id: 32, section: 'reading', type: 'meaning', prompt: { korean: '크다', romanization: 'keuda' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '작다', romanization: 'jakda' }, { korean: '높다', romanization: 'nopda' }, { korean: '큰 크기를 가지다', romanization: 'keun keugireul gajida' }, { korean: '길다', romanization: 'gilda' }], correctAnswer: 3, explanation: { english: '크다 (keuda) is an adjective meaning big or large in size.' } },
+        { id: 33, section: 'reading', type: 'meaning', prompt: { korean: '의사', romanization: 'uisa' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '환자', romanization: 'hwanja' }, { korean: '의료 전문가', romanization: 'uiryo jeonmun-ga' }, { korean: '간호사', romanization: 'ganhosa' }, { korean: '약사', romanization: 'yaksa' }], correctAnswer: 2, explanation: { english: '의사 (uisa) is a doctor - a medical professional who treats patients.' } },
+        { id: 34, section: 'reading', type: 'meaning', prompt: { korean: '도서관', romanization: 'doseo-gwan' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '병원', romanization: 'byeongwon' }, { korean: '학교', romanization: 'hakgyo' }, { korean: '책이 많은 곳', romanization: 'chag-i manheun got' }, { korean: '가게', romanization: 'gage' }], correctAnswer: 3, explanation: { english: '도서관 (doseo-gwan) is a library - a place where many books are kept.' } },
+        { id: 35, section: 'reading', type: 'meaning', prompt: { korean: '기쁘다', romanization: 'gippeuda' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '슬프다', romanization: 'seulpeuda' }, { korean: '좋은 감정을 가지다', romanization: 'joheun gamjeong-eul gajida' }, { korean: '화나다', romanization: 'hwanada' }, { korean: '무섭다', romanization: 'museobda' }], correctAnswer: 2, explanation: { english: '기쁘다 (gippeuda) means to be happy or to feel joy.' } },
+        { id: 36, section: 'reading', type: 'meaning', prompt: { korean: '봄', romanization: 'bom' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '계절 - 3월, 4월, 5월', romanization: 'gyejeol - 3wol, 4wol, 5wol' }, { korean: '여름', romanization: 'yeoreum' }, { korean: '가을', romanization: 'gaeul' }, { korean: '겨울', romanization: 'gyeoul' }], correctAnswer: 1, explanation: { english: '봄 (bom) is spring, the season from March to May.' } },
+        { id: 37, section: 'reading', type: 'meaning', prompt: { korean: '문제', romanization: 'munje' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '답', romanization: 'dap' }, { korean: '해결해야 할 어려움', romanization: 'haegyeolhaeyahhal eoryeoun' }, { korean: '공부', romanization: 'gongbu' }, { korean: '시험', romanization: 'siheom' }], correctAnswer: 2, explanation: { english: '문제 (munje) means problem - a difficult situation that needs to be solved.' } },
+        { id: 38, section: 'reading', type: 'meaning', prompt: { korean: '좋아하다', romanization: 'joahada' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '싫어하다', romanization: 'sireohada' }, { korean: '긍정적인 감정을 가지다', romanization: 'geungjeong-jeok-in gamjeong-eul gajida' }, { korean: '이해하다', romanization: 'ihaehada' }, { korean: '알다', romanization: 'alda' }], correctAnswer: 2, explanation: { english: '좋아하다 (joahada) means to like or love someone/something.' } },
+        { id: 39, section: 'reading', type: 'meaning', prompt: { korean: '여행', romanization: 'yeohaeng' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '일', romanization: 'il' }, { korean: '한 곳에서 다른 곳으로 가기', romanization: 'han got-eseo dareun got-euro gagi' }, { korean: '운동', romanization: 'undong' }, { korean: '공부', romanization: 'gongbu' }], correctAnswer: 2, explanation: { english: '여행 (yeohaeng) means travel or a trip to another place.' } },
+        { id: 40, section: 'reading', type: 'meaning', prompt: { korean: '마다', romanization: 'mada' }, instruction: { korean: '이 말의 뜻으로 알맞은 것을 고르십시오.', romanization: 'I mal-ui tteus-euro almajeun geoseul goreusipsio.' }, options: [{ korean: '처음', romanization: 'cheoeeum' }, { korean: '마지막', romanization: 'majinak' }, { korean: '매번', romanization: 'maebeon' }, { korean: '한 번', romanization: 'han beon' }], correctAnswer: 3, explanation: { english: '마다 (mada) means every time or each occurrence. Example: 매일 마다 = every day.' } },
+        // Q41-52: Fill Blank (Grammar)
+        { id: 41, section: 'reading', type: 'fill-blank', sentence: { korean: '나는 학생( )이에요.', romanization: 'Naneun haksaeng( )ieyeo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '를', romanization: 'reul' }, { korean: '에게', romanization: 'ege' }, { korean: '도', romanization: 'do' }, { korean: '만', romanization: 'man' }], correctAnswer: 3, explanation: { english: 'This means "I am a student." No particle is needed between subject and copula.' } },
+        { id: 42, section: 'reading', type: 'fill-blank', sentence: { korean: '학교( ) 가요.', romanization: 'Hakgyo( ) gayo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '으로', romanization: 'euro' }, { korean: '에', romanization: 'e' }, { korean: '을', romanization: 'eul' }, { korean: '이', romanization: 'i' }], correctAnswer: 2, explanation: { english: 'The particle 에 marks the destination in motion: "go to school."' } },
+        { id: 43, section: 'reading', type: 'fill-blank', sentence: { korean: '물을 ( ) 마셨어요.', romanization: 'Muleul ( ) masyeossoyo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '빠르게', romanization: 'ppareuge' }, { korean: '크게', romanization: 'keuge' }, { korean: '천천히', romanization: 'cheoncheonhi' }, { korean: '조용히', romanization: 'joyonghi' }], correctAnswer: 3, explanation: { english: 'This means "drank water slowly." 천천히 (cheoncheonhi) is an adverb meaning slowly.' } },
+        { id: 44, section: 'reading', type: 'fill-blank', sentence: { korean: '가방( ) 책이 많습니다.', romanization: 'Gabang( ) chaeg-i manseumnida.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '에', romanization: 'e' }, { korean: '로', romanization: 'ro' }, { korean: '이', romanization: 'i' }, { korean: '를', romanization: 'reul' }], correctAnswer: 1, explanation: { english: 'The particle 에 marks location: "There are many books in the bag."' } },
+        { id: 45, section: 'reading', type: 'fill-blank', sentence: { korean: '친구( ) 만났어요.', romanization: 'Chingu( ) mannassoyo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '에게', romanization: 'ege' }, { korean: '에서', romanization: 'eseo' }, { korean: '로', romanization: 'ro' }, { korean: '를', romanization: 'reul' }], correctAnswer: 1, explanation: { english: 'The particle 에게 marks the person you meet: "met with a friend."' } },
+        { id: 46, section: 'reading', type: 'fill-blank', sentence: { korean: '오늘 날씨가 ( ) 좋습니다.', romanization: 'Oneul nalssi-ga ( ) johseumnida.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '매우', romanization: 'maeu' }, { korean: '빨리', romanization: 'ppalli' }, { korean: '최근', romanization: 'chogeun' }, { korean: '많이', romanization: 'manhi' }], correctAnswer: 1, explanation: { english: 'The adverb 매우 (very) modifies the adjective 좋다: "weather is very nice."' } },
+        { id: 47, section: 'reading', type: 'fill-blank', sentence: { korean: '집( ) 은행이 있어요.', romanization: 'Jip( ) eunhaeng-i itseoyo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '에', romanization: 'e' }, { korean: '에서', romanization: 'eseo' }, { korean: '근처', romanization: 'geuncheо' }, { korean: '옆', romanization: 'yeop' }], correctAnswer: 1, explanation: { english: 'The particle 에 marks location: "There is a bank near my house."' } },
+        { id: 48, section: 'reading', type: 'fill-blank', sentence: { korean: '버스 ( ) 가세요.', romanization: 'Beoseu ( ) gaseyo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '으로', romanization: 'euro' }, { korean: '에서', romanization: 'eseo' }, { korean: '를', romanization: 'reul' }, { korean: '이', romanization: 'i' }], correctAnswer: 1, explanation: { english: 'The particle 으로 marks the means of transportation: "go by bus."' } },
+        { id: 49, section: 'reading', type: 'fill-blank', sentence: { korean: '저는 한국어( ) 공부하고 싶어요.', romanization: 'Jeoneun hangugeo( ) gongbuhago sipeoyo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '을', romanization: 'eul' }, { korean: '를', romanization: 'reul' }, { korean: '이', romanization: 'i' }, { korean: '에', romanization: 'e' }], correctAnswer: 2, explanation: { english: 'The particle 를 marks the direct object: "want to study Korean."' } },
+        { id: 50, section: 'reading', type: 'fill-blank', sentence: { korean: '내일( ) 학교에 가지 않습니다.', romanization: 'Naeil( ) hakgyoe gaji anseumnida.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '은', romanization: 'eun' }, { korean: '는', romanization: 'neun' }, { korean: '도', romanization: 'do' }, { korean: '만', romanization: 'man' }], correctAnswer: 2, explanation: { english: 'The particle 는 (contrast marker): "Tomorrow, I will not go to school."' } },
+        { id: 51, section: 'reading', type: 'fill-blank', sentence: { korean: '이 책은 저것( ) 비싸요.', romanization: 'I chaeg-eun jeogeos( ) bissayo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '보다', romanization: 'boda' }, { korean: '다', romanization: 'da' }, { korean: '처럼', romanization: 'cheoreom' }, { korean: '처럼', romanization: 'cheoreom' }], correctAnswer: 1, explanation: { english: 'The particle 보다 marks comparison: "This book is more expensive than that one."' } },
+        { id: 52, section: 'reading', type: 'fill-blank', sentence: { korean: '엄마가 밥을 ( )고 있어요.', romanization: 'Eomma-ga bab-eul ( )go itseoyo.' }, instruction: { korean: '( )에 알맞은 것을 고르십시오.', romanization: '( )e almajeun geoseul goreusipsio.' }, options: [{ korean: '했', romanization: 'haet' }, { korean: '하고', romanization: 'hago' }, { korean: '하', romanization: 'ha' }, { korean: '하려', romanization: 'haryeo' }], correctAnswer: 3, explanation: { english: 'The continuous aspect "고 있다": "Mom is cooking food."' } },
+        // Q53-62: Dialogue Reading
+        { id: 53, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 생일 파티에 초대해요.' }, { label: '나', korean: 'B: 정말요? 고마워요!' }], question: { korean: '가는 나에게 뭘 합니까?', romanization: 'Ga-neun na-ege mweol hamnimnikka?' }, options: [{ korean: '초대', romanization: 'chodeae' }, { korean: '감사', romanization: 'gamsa' }, { korean: '질문', romanization: 'silmun' }, { korean: '거절', romanization: 'georjeol' }], correctAnswer: 1, explanation: { english: 'Person A invites person B to a birthday party.' } },
+        { id: 54, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 감기 걸렸어요.' }, { label: '나', korean: 'B: 그럼 푹 쉬고 물도 많이 마셔요.' }], question: { korean: 'B의 조언은 뭡니까?', romanization: 'B-ui joeon-eun mweomnikka?' }, options: [{ korean: '병원에 가기', romanization: 'byeongwone gagi' }, { korean: '약 먹기', romanization: 'yak meokgi' }, { korean: '쉬고 물 마시기', romanization: 'swigo mul masigi' }, { korean: '운동하기', romanization: 'undongha ggi' }], correctAnswer: 3, explanation: { english: 'B advises resting well and drinking plenty of water when sick.' } },
+        { id: 55, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 이 가방 예뻐요.' }, { label: '나', korean: 'B: 감사합니다.' }], question: { korean: '가는 뭐라고 말하나요?', romanization: 'Ga-neun mworago malhanaio?' }, options: [{ korean: '칭찬', romanization: 'chingchan' }, { korean: '질문', romanization: 'silmun' }, { korean: '거절', romanization: 'georjeol' }, { korean: '불평', romanization: 'bulpyeong' }], correctAnswer: 1, explanation: { english: 'Person A compliments person B\'s bag (it\'s pretty).' } },
+        { id: 56, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 주말에 뭐 해요?' }, { label: '나', korean: 'B: 공원에 가서 산책해요.' }], question: { korean: 'B는 주말에 뭘 합니까?', romanization: 'B-neun jumal-e mweol hamnimnikka?' }, options: [{ korean: '공부', romanization: 'gongbu' }, { korean: '운동', romanization: 'undong' }, { korean: '산책', romanization: 'sanchаek' }, { korean: '쇼핑', romanization: 'syoping' }], correctAnswer: 3, explanation: { english: 'Person B goes to the park and takes a walk on weekends.' } },
+        { id: 57, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 한국어 배워요?' }, { label: '나', korean: 'B: 네, 매일 공부해요.' }], question: { korean: 'B는 어떻게 한국어를 배우나요?', romanization: 'B-neun eotteohge hangugeo-reul baeunaio?' }, options: [{ korean: '학원에서', romanization: 'hagwon-eseo' }, { korean: '매일 공부해서', romanization: 'maeil gongbuhaeeseo' }, { korean: '친구에게서', romanization: 'chingu-egeseo' }, { korean: '책으로', romanization: 'chaeg-euro' }], correctAnswer: 2, explanation: { english: 'Person B learns Korean by studying every day.' } },
+        { id: 58, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 점심 먹었어요?' }, { label: '나', korean: 'B: 아니요, 아직 못 먹었어요.' }], question: { korean: 'B는 뭘 못 했나요?', romanization: 'B-neun mweol mosjhaesnaio?' }, options: [{ korean: '일하기', romanization: 'ilhagi' }, { korean: '점심 먹기', romanization: 'jeomsim meokgi' }, { korean: '공부하기', romanization: 'gongbuhagi' }, { korean: '만나기', romanization: 'mannagi' }], correctAnswer: 2, explanation: { english: 'Person B has not eaten lunch yet.' } },
+        { id: 59, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 몇 살이세요?' }, { label: '나', korean: 'B: 스무 살입니다.' }], question: { korean: 'B는 몇 살입니까?', romanization: 'B-neun myeot sal-imnikka?' }, options: [{ korean: '10살', romanization: '10sal' }, { korean: '15살', romanization: '15sal' }, { korean: '20살', romanization: '20sal' }, { korean: '25살', romanization: '25sal' }], correctAnswer: 3, explanation: { english: 'Person B is 스무 살 (20 years old).' } },
+        { id: 60, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 한국 사람이에요?' }, { label: '나', korean: 'B: 아니요, 미국 사람이에요.' }], question: { korean: 'B는 어느 나라 사람이에요?', romanization: 'B-neun eoneu nara saram-ieo?' }, options: [{ korean: '한국 사람', romanization: 'hanguk saram' }, { korean: '미국 사람', romanization: 'miguk saram' }, { korean: '일본 사람', romanization: 'ilbon saram' }, { korean: '중국 사람', romanization: 'jungguk saram' }], correctAnswer: 2, explanation: { english: 'Person B is American (from the USA).' } },
+        { id: 61, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 버스 정류장이 어디예요?' }, { label: '나', korean: 'B: 저기 신호등 근처에 있어요.' }], question: { korean: '버스 정류장은 어디에 있어요?', romanization: 'Beoseu jeongnyujang-eun eodi-e itseoyo?' }, options: [{ korean: '신호등 근처', romanization: 'sinhodeung geuncheо' }, { korean: '은행 근처', romanization: 'eunhaeng geuncheо' }, { korean: '학교 앞', romanization: 'hakgyo ap' }, { korean: '시장 옆', romanization: 'sijang yeop' }], correctAnswer: 1, explanation: { english: 'The bus stop is near the traffic light.' } },
+        { id: 62, section: 'reading', type: 'dialogue', speakers: [{ label: '가', korean: 'A: 한국 음식을 좋아해요?' }, { label: '나', korean: 'B: 네, 특히 김치를 좋아해요.' }], question: { korean: 'B가 특히 좋아하는 음식은 뭐예요?', romanization: 'B-ga teukhhi joahaneun eumsig-eun mwoyeyo?' }, options: [{ korean: '떡국', romanization: 'tteokguk' }, { korean: '불고기', romanization: 'bulgogi' }, { korean: '김치', romanization: 'gimchi' }, { korean: '비빔밥', romanization: 'bibimbap' }], correctAnswer: 3, explanation: { english: 'Person B especially likes kimchi, a traditional Korean fermented vegetable.' } },
+        // Q63-70: Reading Comprehension
+        { id: 63, section: 'reading', type: 'reading-comprehension', passage: { korean: '이곳은 금연 구역입니다. 담배를 피우지 마세요. 위반 시 벌금이 있습니다.', romanization: 'Igoseu-neun geumnyon guyeogimnida. Dambae-reul piuji maseyo. Wibean si beolgeum-i isseumnida.' }, question: { korean: '이곳에서 뭘 할 수 없어요?', romanization: 'Igoseseo mweol hal su eopseoyo?' }, options: [{ korean: '먹기', romanization: 'meokgi' }, { korean: '담배 피우기', romanization: 'dambae piugi' }, { korean: '말하기', romanization: 'malhagi' }, { korean: '앉기', romanization: 'apgi' }], correctAnswer: 2, explanation: { english: 'This is a no-smoking area. Smoking is prohibited.' } },
+        { id: 64, section: 'reading', type: 'reading-comprehension', passage: { korean: '영화관 이용 요금: 어른 15,000원, 학생 10,000원, 아이 5,000원', romanization: 'Yeonghwagwan iyong yogeum: eoreun 15000won, haksaeng 10000won, ai 5000won' }, question: { korean: '학생의 영화 표값은 얼마입니까?', romanization: 'Haksaeng-ui yeonghwa pyochi-neun eolmaimnikka?' }, options: [{ korean: '5,000원', romanization: '5000won' }, { korean: '10,000원', romanization: '10000won' }, { korean: '15,000원', romanization: '15000won' }, { korean: '20,000원', romanization: '20000won' }], correctAnswer: 2, explanation: { english: 'According to the price list, a student ticket is 10,000 won.' } },
+        { id: 65, section: 'reading', type: 'reading-comprehension', passage: { korean: '월: 수학 9시, 영어 10시 / 수: 과학 9시, 한국어 10시 / 목: 영어 9시, 미술 10시', romanization: 'Wol: suhak 9si, yeongeo 10si / Su: gwahak 9si, hangugeo 10si / Mok: yeongeo 9si, misul 10si' }, question: { korean: '수요일 10시의 수업은 뭐예요?', romanization: 'Suyoil 10si-ui sueop-eun mwoyeyo?' }, options: [{ korean: '과학', romanization: 'gwahak' }, { korean: '한국어', romanization: 'hangugeo' }, { korean: '미술', romanization: 'misul' }, { korean: '영어', romanization: 'yeongeo' }], correctAnswer: 2, explanation: { english: 'According to the timetable, Wednesday at 10 AM is Korean class.' } },
+        { id: 66, section: 'reading', type: 'reading-comprehension', passage: { korean: '저는 매일 아침 6시에 일어납니다. 7시에 학교에 갑니다. 학교에서 열심히 공부합니다.', romanization: 'Jeoneun maeil achim 6si-e ireonamnida. 7si-e hakgyoe gamnida. Hakgyoeseo yeolsimhi gongbuhamnida.' }, question: { korean: '저는 몇 시에 일어나요?', romanization: 'Jeoneun myeot si-e ireonayo?' }, options: [{ korean: '6시', romanization: '6si' }, { korean: '7시', romanization: '7si' }, { korean: '8시', romanization: '8si' }, { korean: '9시', romanization: '9si' }], correctAnswer: 1, explanation: { english: 'According to the passage, the person wakes up at 6 AM every morning.' } },
+        { id: 67, section: 'reading', type: 'reading-comprehension', passage: { korean: '안녕하세요. 저는 김철수입니다. 저는 한국에서 왔습니다. 저는 선생님입니다. 저는 한국어를 가르칩니다.', romanization: 'Annyeonghaseyo. Jeoneun Gim Cheolsu-imnida. Jeoneun Hanguk-eseo watsseumnida. Jeoneun seonsaengnim-imnida. Jeoneun hangugeo-reul garachipnida.' }, question: { korean: '이 사람은 뭘 가르쳐요?', romanization: 'I saram-eun mweol garacyeoyo?' }, options: [{ korean: '수학', romanization: 'suhak' }, { korean: '영어', romanization: 'yeongeo' }, { korean: '한국어', romanization: 'hangugeo' }, { korean: '과학', romanization: 'gwahak' }], correctAnswer: 3, explanation: { english: 'Kim Cheolsu is a teacher who teaches Korean language.' } },
+        { id: 68, section: 'reading', type: 'reading-comprehension', passage: { korean: '부산은 한국의 남쪽에 있습니다. 부산은 매우 아름답습니다. 많은 사람들이 부산에 갑니다.', romanization: 'Busan-eun Hanguk-ui namjjok-e isseumnida. Busan-eun maeu areumdapseumnida. Manheun saramdeul-i busan-e gamnida.' }, question: { korean: '부산은 한국의 어디에 있어요?', romanization: 'Busan-eun Hanguk-ui eodi-e itseoyo?' }, options: [{ korean: '북쪽', romanization: 'bukjjok' }, { korean: '남쪽', romanization: 'namjjok' }, { korean: '동쪽', romanization: 'dongjjok' }, { korean: '서쪽', romanization: 'seojjok' }], correctAnswer: 2, explanation: { english: 'Busan is located in the southern part of Korea.' } },
+        { id: 69, section: 'reading', type: 'reading-comprehension', passage: { korean: '한국의 날씨는 계절마다 다릅니다. 봄은 따뜻합니다. 여름은 덥습니다. 가을은 시원합니다. 겨울은 춥습니다.', romanization: 'Hanguk-ui nalssi-neun gyejeol-mada daramnida. Bom-eun ttadeuthamnida. Yeoreum-eun deopsseumnida. Gaeul-eun siwonhamnida. Gyeoul-eun chupseumnida.' }, question: { korean: '한국의 겨울은 어떤가요?', romanization: 'Hanguk-ui gyeoul-eun eotteongayo?' }, options: [{ korean: '따뜻하다', romanization: 'ttadeuthada' }, { korean: '덥다', romanization: 'deobda' }, { korean: '시원하다', romanization: 'siwonhada' }, { korean: '춥다', romanization: 'chubda' }], correctAnswer: 4, explanation: { english: 'According to the passage, Korean winter is cold (춥다).' } },
+        { id: 70, section: 'reading', type: 'reading-comprehension', passage: { korean: '추석은 한국의 중요한 명절입니다. 추석에는 가족이 함께 음식을 먹습니다. 많은 사람들이 고향에 갑니다.', romanization: 'Chuseok-eun Hanguk-ui jungyohan myeongjeol-imnida. Chuseok-e-neun gajok-i hamkke eumsig-eul meokseumnida. Manheun saramdeul-i gohyang-e gamnida.' }, question: { korean: '추석은 뭐예요?', romanization: 'Chuseok-eun mwoyeyo?' }, options: [{ korean: '명절', romanization: 'myeongjeol' }, { korean: '계절', romanization: 'gyejeol' }, { korean: '날씨', romanization: 'nalssi' }, { korean: '음식', romanization: 'eumsig' }], correctAnswer: 1, explanation: { english: 'Chuseok is an important Korean holiday when families gather to eat together.' } },
+      ],
+    };
+
+    function init() {
+      loadSessionFromStorage();
+      showScreen('start');
+      renderStartScreen();
+    }
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('screen--active'));
+      document.getElementById(`screen-${screenId}`).classList.add('screen--active');
+      AppState.phase = screenId;
+    }
+
+    function renderStartScreen() {
+      const startBtn = document.getElementById('start-btn');
+      startBtn.addEventListener('click', handleStartExam);
+    }
+
+    function handleStartExam() {
+      const randomizeOpt = document.getElementById('randomize-opt').checked;
+      AppState.options.randomizeOrder = randomizeOpt;
+      AppState.questionOrder.listening = buildQuestionOrder('listening', randomizeOpt);
+      AppState.questionOrder.reading = buildQuestionOrder('reading', randomizeOpt);
+      startListeningSection();
+    }
+
+    function buildQuestionOrder(section, randomize) {
+      const count = section === 'listening' ? 30 : 40;
+      const order = Array.from({ length: count }, (_, i) => i);
+      return randomize ? fisherYatesShuffle(order) : order;
+    }
+
+    function fisherYatesShuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startListeningSection() {
+      AppState.currentSection = 'listening';
+      AppState.currentQuestionIndex = 0;
+      showScreen('exam');
+      renderExamScreen();
+      renderQuestion();
+      renderSidebarGrid();
+      startTimer('listening');
+    }
+
+    function renderExamScreen() {
+      const examBody = document.getElementById('sidebar-content');
+      examBody.innerHTML = '';
+    }
+
+    function renderQuestion() {
+      const q = getCurrentQuestion();
+      const wrapper = document.getElementById('question-wrapper');
+      wrapper.innerHTML = '';
+
+      const orderIndex = AppState.currentQuestionIndex;
+      const sectionTotal = AppState.currentSection === 'listening' ? 30 : 40;
+      const qNum = orderIndex + 1;
+
+      document.getElementById('section-label').textContent = AppState.currentSection === 'listening' ? '듣기' : '읽기';
+      document.getElementById('q-number').textContent = qNum;
+      document.getElementById('q-total').textContent = sectionTotal;
+
+      const userAnswer = AppState.answers[getQuestionKey()] || null;
+
+      let content = `
+        <div class="question-number">${AppState.currentSection.toUpperCase()} 문제 ${qNum}번</div>
+        <div class="question-prompt">${q.prompt?.korean || q.sentence?.korean || q.passage?.korean || q.speakers?.[0]?.korean || q.question?.korean || ''}</div>
+        <div class="question-romanization">${q.prompt?.romanization || q.sentence?.romanization || q.passage?.romanization || q.speakers?.[0]?.romanization || q.question?.romanization || ''}</div>
+      `;
+
+      if (q.type === 'picture-vocab') {
+        content += `<div style="font-size: 64px; margin: var(--space-6) 0;">${q.pictureEmoji}</div>`;
+      }
+
+      if (q.audioIndicator) {
+        content += `<button class="question-audio-btn">▶ [AUDIO CLIP]</button>`;
+      }
+
+      if (q.speakers && q.speakers.length) {
+        content += `<div class="question-script">`;
+        q.speakers.forEach(s => {
+          content += `<div class="script-line"><span class="script-speaker">${s.label}:</span><span class="script-text">${s.korean}</span></div>`;
+        });
+        content += `</div>`;
+        content += `<div class="question-prompt">${q.question?.korean || ''}</div>`;
+        content += `<div class="question-romanization">${q.question?.romanization || ''}</div>`;
+      }
+
+      if (q.type === 'reading-comprehension' && q.passage) {
+        content += `<div class="passage-text">${q.passage.korean}<br><span class="question-romanization">${q.passage.romanization}</span></div>`;
+        content += `<div class="question-prompt">${q.question.korean}</div>`;
+        content += `<div class="question-romanization">${q.question.romanization}</div>`;
+      }
+
+      content += `<div class="answer-options">`;
+      q.options.forEach((opt, idx) => {
+        const num = idx + 1;
+        const isSelected = userAnswer === num ? ' answer-option--selected' : '';
+        content += `
+          <div class="answer-option${isSelected}" onclick="handleAnswerSelect(${num})">
+            <div class="answer-option__number">${num}</div>
+            <div class="answer-option__content">
+              <div class="answer-option__text">${opt.korean}</div>
+              <div class="answer-option__rom">${opt.romanization}</div>
+            </div>
+          </div>
+        `;
+      });
+      content += `</div>`;
+
+      wrapper.innerHTML = content;
+      updateProgressBar();
+      updateMarkButton();
+    }
+
+    function getCurrentQuestion() {
+      const orderIndex = AppState.questionOrder[AppState.currentSection][AppState.currentQuestionIndex];
+      return questionData[AppState.currentSection][orderIndex];
+    }
+
+    function getQuestionKey() {
+      return `${AppState.currentSection}-${AppState.currentQuestionIndex}`;
+    }
+
+    function handleAnswerSelect(optionNumber) {
+      const key = getQuestionKey();
+      AppState.answers[key] = optionNumber;
+      saveSessionToStorage();
+      renderQuestion();
+      updateGridCell();
+    }
+
+    function renderSidebarGrid() {
+      const sidebar = document.getElementById('sidebar-content');
+      let html = `
+        <div class="sidebar__section-label">듣기</div>
+        <div class="sidebar__grid">
+      `;
+
+      for (let i = 0; i < 30; i++) {
+        const key = `listening-${i}`;
+        let cellClass = 'grid-cell';
+        if (AppState.currentSection === 'listening' && AppState.currentQuestionIndex === i) {
+          cellClass += ' grid-cell--current';
+        } else if (AppState.markedQuestions.has(key)) {
+          cellClass += ' grid-cell--marked';
+        } else if (AppState.answers[key]) {
+          cellClass += ' grid-cell--answered';
+        }
+        html += `<div class="${cellClass}" onclick="goToQuestion('listening', ${i})">${i + 1}</div>`;
+      }
+
+      html += `</div><div class="sidebar__divider"></div>`;
+      html += `<div class="sidebar__section-label">읽기</div>`;
+      html += `<div class="sidebar__grid">`;
+
+      for (let i = 0; i < 40; i++) {
+        const key = `reading-${i}`;
+        let cellClass = 'grid-cell';
+        if (AppState.currentSection === 'reading' && AppState.currentQuestionIndex === i) {
+          cellClass += ' grid-cell--current';
+        } else if (AppState.markedQuestions.has(key)) {
+          cellClass += ' grid-cell--marked';
+        } else if (AppState.answers[key]) {
+          cellClass += ' grid-cell--answered';
+        }
+        html += `<div class="${cellClass}" onclick="goToQuestion('reading', ${i})">${i + 1}</div>`;
+      }
+
+      html += `</div>`;
+      html += `
+        <div class="sidebar__legend">
+          <div class="legend-item"><div class="legend-dot" style="background: var(--state-unanswered);"></div><span>미답</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background: var(--state-answered);"></div><span>답함</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background: var(--state-marked);"></div><span>표시</span></div>
+        </div>
+      `;
+
+      sidebar.innerHTML = html;
+    }
+
+    function updateGridCell() {
+      const key = getQuestionKey();
+      const cells = document.querySelectorAll('.grid-cell');
+      cells.forEach((cell, idx) => {
+        const section = AppState.currentSection;
+        const actualIdx = idx - (section === 'listening' ? 0 : 31);
+        const cellKey = `${section}-${actualIdx}`;
+        if (cellKey === key) {
+          cell.classList.toggle('grid-cell--answered', !!AppState.answers[key]);
+          cell.classList.remove('grid-cell--marked');
+        }
+      });
+    }
+
+    function goToQuestion(section, index) {
+      AppState.currentSection = section;
+      AppState.currentQuestionIndex = index;
+      renderQuestion();
+      renderSidebarGrid();
+    }
+
+    function updateProgressBar() {
+      const total = AppState.currentSection === 'listening' ? 30 : 40;
+      const answered = Object.values(AppState.answers).filter(v => v !== null).length;
+      const pct = Math.round((answered / 70) * 100);
+      document.getElementById('progress-pct').textContent = `${answered} / 70 답함`;
+    }
+
+    function updateMarkButton() {
+      const btn = document.getElementById('mark-btn');
+      const key = getQuestionKey();
+      btn.classList.toggle('mark-btn--active', AppState.markedQuestions.has(key));
+      btn.onclick = handleMarkToggle;
+    }
+
+    function handleMarkToggle() {
+      const key = getQuestionKey();
+      if (AppState.markedQuestions.has(key)) {
+        AppState.markedQuestions.delete(key);
+      } else {
+        AppState.markedQuestions.add(key);
+      }
+      saveSessionToStorage();
+      renderSidebarGrid();
+      updateMarkButton();
+    }
+
+    function startTimer(section) {
+      stopTimer();
+      const timerData = AppState.timer[section];
+      AppState.timer.intervalId = setInterval(() => tickTimer(section), 1000);
+    }
+
+    function tickTimer(section) {
+      const timerData = AppState.timer[section];
+      timerData.remainingSeconds--;
+      renderTimerDisplay();
+      updateTimerProgressBar();
+
+      if (timerData.remainingSeconds % 10 === 0) {
+        saveSessionToStorage();
+      }
+
+      if (timerData.remainingSeconds <= 0) {
+        handleTimerExpiry();
+      }
+    }
+
+    function renderTimerDisplay() {
+      const secs = AppState.timer[AppState.currentSection].remainingSeconds;
+      const display = document.getElementById('timer-display');
+      const mins = Math.floor(secs / 60);
+      const s = secs % 60;
+      display.textContent = `${String(mins).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      display.classList.remove('timer-display--warning', 'timer-display--critical');
+      if (secs <= 300) {
+        display.classList.add('timer-display--critical');
+      } else if (secs <= 600) {
+        display.classList.add('timer-display--warning');
+      }
+    }
+
+    function updateTimerProgressBar() {
+      const section = AppState.currentSection;
+      const { remainingSeconds, totalSeconds } = AppState.timer[section];
+      const pct = (remainingSeconds / totalSeconds) * 100;
+      const bar = document.getElementById('timer-progress');
+      if (bar) bar.style.width = pct + '%';
+    }
+
+    function stopTimer() {
+      if (AppState.timer.intervalId) clearInterval(AppState.timer.intervalId);
+      AppState.timer.intervalId = null;
+    }
+
+    function handleTimerExpiry() {
+      stopTimer();
+      if (AppState.currentSection === 'listening') {
+        startReadingSection();
+      } else {
+        transitionToResults();
+      }
+    }
+
+    function startReadingSection() {
+      AppState.currentSection = 'reading';
+      AppState.currentQuestionIndex = 0;
+      renderQuestion();
+      renderSidebarGrid();
+      startTimer('reading');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('prev-btn').addEventListener('click', () => {
+        if (AppState.currentQuestionIndex > 0) {
+          AppState.currentQuestionIndex--;
+          renderQuestion();
+          renderSidebarGrid();
+        }
+      });
+
+      document.getElementById('next-btn').addEventListener('click', () => {
+        const total = AppState.currentSection === 'listening' ? 30 : 40;
+        if (AppState.currentQuestionIndex < total - 1) {
+          AppState.currentQuestionIndex++;
+          renderQuestion();
+          renderSidebarGrid();
+        }
+      });
+
+      document.getElementById('submit-section-btn').addEventListener('click', () => {
+        stopTimer();
+        if (AppState.currentSection === 'listening') {
+          startReadingSection();
+        } else {
+          transitionToResults();
+        }
+      });
+
+      document.getElementById('review-toggle').addEventListener('click', () => {
+        const list = document.getElementById('review-list');
+        list.classList.toggle('review-list--open');
+      });
+
+      document.getElementById('retake-btn').addEventListener('click', () => {
+        AppState = {
+          phase: 'start',
+          currentSection: 'listening',
+          currentQuestionIndex: 0,
+          answers: {},
+          markedQuestions: new Set(),
+          timer: {
+            listening: { totalSeconds: 40 * 60, remainingSeconds: 40 * 60 },
+            reading: { totalSeconds: 60 * 60, remainingSeconds: 60 * 60 },
+            intervalId: null,
+          },
+          options: { randomizeOrder: false },
+          questionOrder: { listening: [], reading: [] },
+          results: null,
+        };
+        clearSession();
+        showScreen('start');
+        renderStartScreen();
+      });
+
+      init();
+    });
+
+    function transitionToResults() {
+      calculateResults();
+      showScreen('results');
+      renderResultsScreen();
+    }
+
+    function calculateResults() {
+      let listeningScore = 0;
+      let readingScore = 0;
+      const questionResults = [];
+
+      questionData.listening.forEach((q, i) => {
+        const key = `listening-${i}`;
+        const userAnswer = AppState.answers[key] || null;
+        const correct = userAnswer === q.correctAnswer;
+        if (correct) listeningScore += SCORE_PER_Q.listening;
+        questionResults.push({ key, section: 'listening', correct, userAnswer, correctAnswer: q.correctAnswer, ...q });
+      });
+
+      questionData.reading.forEach((q, i) => {
+        const key = `reading-${i}`;
+        const userAnswer = AppState.answers[key] || null;
+        const correct = userAnswer === q.correctAnswer;
+        if (correct) readingScore += SCORE_PER_Q.reading;
+        questionResults.push({ key, section: 'reading', correct, userAnswer, correctAnswer: q.correctAnswer, ...q });
+      });
+
+      const totalScore = Math.round(listeningScore + readingScore);
+      const roundedListening = Math.round(listeningScore);
+      const roundedReading = Math.round(readingScore);
+      let level = 'fail';
+      if (totalScore >= 140) level = 'level2';
+      else if (totalScore >= 80) level = 'level1';
+
+      AppState.results = {
+        listeningScore: roundedListening,
+        readingScore: roundedReading,
+        totalScore,
+        level,
+        questionResults,
+      };
+    }
+
+    function renderResultsScreen() {
+      const r = AppState.results;
+      document.getElementById('total-score').textContent = r.totalScore;
+      document.getElementById('listening-score').textContent = r.listeningScore;
+      document.getElementById('reading-score').textContent = r.readingScore;
+
+      let badgeHtml = '';
+      if (r.level === 'level2') badgeHtml = '<div class="level-badge level-badge--level2">🏅 TOPIK 2급</div>';
+      else if (r.level === 'level1') badgeHtml = '<div class="level-badge level-badge--level1">🎖️ TOPIK 1급</div>';
+      else badgeHtml = '<div class="level-badge level-badge--fail">미달</div>';
+
+      document.querySelector('.level-badge').outerHTML = badgeHtml;
+
+      const reviewList = document.getElementById('review-list');
+      reviewList.innerHTML = '';
+
+      r.questionResults.forEach((result) => {
+        const isCorrect = result.correct;
+        const userAnswerText = result.userAnswer ? result.options[result.userAnswer - 1].korean : '미답';
+        const correctAnswerText = result.options[result.correctAnswer - 1].korean;
+
+        const itemClass = isCorrect ? 'review-item--correct' : result.userAnswer ? 'review-item--incorrect' : 'review-item--skipped';
+        const resultText = isCorrect ? '✓ 정답' : result.userAnswer ? '✗ 오답' : '- 미답';
+
+        let html = `
+          <li class="review-item ${itemClass}" onclick="this.classList.toggle('review-item--open')">
+            <div class="review-item__header">
+              <div class="review-item__number">${result.section} Q${result.id}</div>
+              <div class="review-item__result">${resultText}</div>
+            </div>
+            <div class="review-item__question">${result.question?.korean || result.prompt?.korean || result.sentence?.korean || ''}</div>
+            <div class="review-answer-row">
+              <span class="review-answer-label">당신의 답:</span>
+              <span class="review-answer-text">${userAnswerText}</span>
+            </div>
+            <div class="review-answer-row">
+              <span class="review-answer-label">정답:</span>
+              <span class="review-answer-text">${correctAnswerText}</span>
+            </div>
+            <div class="review-item__explanation">${result.explanation?.english || ''}</div>
+          </li>
+        `;
+        reviewList.innerHTML += html;
+      });
+    }
+
+    function saveSessionToStorage() {
+      const state = {
+        version: 1,
+        phase: AppState.phase,
+        currentSection: AppState.currentSection,
+        currentQuestionIndex: AppState.currentQuestionIndex,
+        answers: AppState.answers,
+        markedQuestions: Array.from(AppState.markedQuestions),
+        timer: {
+          listening: { remainingSeconds: AppState.timer.listening.remainingSeconds },
+          reading: { remainingSeconds: AppState.timer.reading.remainingSeconds },
+        },
+        options: AppState.options,
+        questionOrder: AppState.questionOrder,
+        savedAt: Date.now(),
+      };
+      localStorage.setItem('topik1_session', JSON.stringify(state));
+    }
+
+    function loadSessionFromStorage() {
+      const stored = localStorage.getItem('topik1_session');
+      if (stored) {
+        try {
+          const state = JSON.parse(stored);
+          AppState.phase = state.phase;
+          AppState.currentSection = state.currentSection;
+          AppState.currentQuestionIndex = state.currentQuestionIndex;
+          AppState.answers = state.answers;
+          AppState.markedQuestions = new Set(state.markedQuestions || []);
+          AppState.timer.listening.remainingSeconds = state.timer?.listening?.remainingSeconds || 2400;
+          AppState.timer.reading.remainingSeconds = state.timer?.reading?.remainingSeconds || 3600;
+          AppState.options = state.options || AppState.options;
+          AppState.questionOrder = state.questionOrder || AppState.questionOrder;
+        } catch (e) {
+          console.log('Failed to load session', e);
+        }
+      }
+    }
+
+    function clearSession() {
+      localStorage.removeItem('topik1_session');
+    }
+  </script>
+</body>
+</html>
